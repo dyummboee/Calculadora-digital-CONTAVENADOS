@@ -192,7 +192,9 @@
                 <div class="icono">🏢</div>
                 <h2>Pagos Provisionales RESICO Personas Morales</h2>
                 <p>Calculadora Para Pagos Provisionales En El Régimen De RESICO.</p>
-                <button class="boton">Abrir</button>
+               <button class="boton" onclick="abrirRESICO()">
+    Abrir
+</button>
             </div>
 
         </div>
@@ -256,7 +258,156 @@
         }
 
         function calcular(){
+function abrirRESICO(){
 
+document.getElementById("menu").style.display="none";
+document.getElementById("pantallaRESICO").style.display="flex";
+
+}
+
+function volverMenuRESICO(){
+
+document.getElementById("menu").style.display="block";
+document.getElementById("pantallaRESICO").style.display="none";
+
+}
+
+function calcRESICO(){
+
+let i =
+parseFloat(document.getElementById("ing").value) || 0;
+
+let d =
+parseFloat(document.getElementById("ded").value) || 0;
+
+let t =
+parseFloat(document.getElementById("tas").value) || 30;
+
+let base = i - d;
+
+if(base < 0){
+base = 0;
+}
+
+let isr = base * (t/100);
+
+document.getElementById("base").innerHTML =
+"$" + base.toFixed(2);
+
+document.getElementById("isr").innerHTML =
+"$" + isr.toFixed(2);
+
+}
+
+function guardarRESICO(){
+
+let ingresos =
+document.getElementById("ing").value;
+
+if(ingresos==""){
+alert("Ingresa los ingresos");
+return;
+}
+
+let fecha =
+new Date().toLocaleDateString();
+
+let obj = {
+
+fecha: fecha,
+
+base:
+document.getElementById("base").innerHTML,
+
+isr:
+document.getElementById("isr").innerHTML,
+
+id: Date.now()
+
+};
+
+let db =
+JSON.parse(localStorage.getItem("db_resico")) || [];
+
+db.push(obj);
+
+localStorage.setItem(
+"db_resico",
+JSON.stringify(db)
+);
+
+renderRESICO();
+
+}
+
+function renderRESICO(){
+
+let db =
+JSON.parse(localStorage.getItem("db_resico")) || [];
+
+let tabla =
+document.getElementById("tab");
+
+if(!tabla) return;
+
+tabla.innerHTML="";
+
+[...db].reverse().forEach(item=>{
+
+tabla.innerHTML += `
+<tr>
+<td>${item.fecha}</td>
+<td>${item.base}</td>
+<td>${item.isr}</td>
+<td>
+<button onclick="borrarRESICO(${item.id})">
+Borrar
+</button>
+</td>
+</tr>
+`;
+
+});
+
+}
+
+function borrarRESICO(id){
+
+let db =
+JSON.parse(localStorage.getItem("db_resico")) || [];
+
+db =
+db.filter(x => x.id != id);
+
+localStorage.setItem(
+"db_resico",
+JSON.stringify(db)
+);
+
+renderRESICO();
+
+}
+
+function filtrarRESICO(){
+
+let valor =
+document.getElementById("bus").value.toUpperCase();
+
+let filas =
+document.getElementById("tab").getElementsByTagName("tr");
+
+for(let fila of filas){
+
+fila.style.display =
+fila.innerText.toUpperCase().includes(valor)
+? ""
+: "none";
+
+}
+
+}
+
+renderRESICO();
             let utilidad =
             parseFloat(document.getElementById("utilidad").value);
 
@@ -277,6 +428,78 @@
             "💰 Resultado: " + coeficiente.toFixed(4);
         }
 
+<!-- CALCULADORA RESICO -->
+
+<div class="pantalla" id="pantallaRESICO">
+
+<div class="calculadora" style="width:800px; max-width:95%;">
+
+<h1 style="color:#444; font-size:28px;">
+🏢 Pago Provisional ISR RESICO
+</h1>
+
+<div class="formula">
+ISR = (Ingresos - Deducciones) × 30%
+</div>
+
+<input type="number" id="ing"
+placeholder="Ingresos Cobrados"
+oninput="calcRESICO()">
+
+<input type="number" id="ded"
+placeholder="Deducciones Pagadas"
+oninput="calcRESICO()">
+
+<input type="number" id="tas"
+value="30"
+placeholder="Tasa ISR"
+oninput="calcRESICO()">
+
+<div class="resultado">
+Base Gravable:
+<b id="base">$0.00</b>
+</div>
+
+<div class="resultado">
+Pago Provisional:
+<b id="isr">$0.00</b>
+</div>
+
+<button class="boton"
+onclick="guardarRESICO()">
+Guardar Pago
+</button>
+
+<br><br>
+
+<input type="text"
+id="bus"
+placeholder="Buscar por fecha..."
+onkeyup="filtrarRESICO()">
+
+<table style="width:100%; margin-top:15px;">
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Base</th>
+<th>ISR</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody id="tab"></tbody>
+</table>
+
+<br>
+
+<button class="boton"
+onclick="volverMenuRESICO()">
+⬅ Volver
+</button>
+
+</div>
+
+</div>
+        
     </script>
 
 </body>
